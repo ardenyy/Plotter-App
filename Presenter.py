@@ -9,6 +9,11 @@ import SerialCommunicator
 
 
 class Presenter(QObject):
+    '''
+    Main class for model-view communications
+    It communicates via QT Signals and Slots
+    '''
+
     newFrame = Signal()
     finishedStreaming = Signal()
     startedStreaming = Signal()
@@ -61,8 +66,8 @@ class Presenter(QObject):
     def processImage(self):
         processed_image = self.processor.process(Camera.global_image)
         self.camera.changeGlobalImage(processed_image)
-        self.stopCamera()
         self.getSerialPorts()
+        self.stopCamera()
 
     @Slot(str)
     def startPlotting(self, port):

@@ -5,7 +5,11 @@ from PySide2.QtCore import Slot, Signal, QObject, Qt
 from PySide2.QtQuick import QQuickImageProvider
 from PySide2.QtGui import QImage
 
+# Cached Image, prevents ui to ask to many requests from camera
+# also work as placeholder while app starts
 global_image = QImage(0, 0, QImage.Format_BGR888)
+# as opencv provides image in BGR format and Qt also support this format,
+# throughout the application BGR forma will be used rather than classic RGB
 
 
 class Camera(QObject):
@@ -26,8 +30,8 @@ class Camera(QObject):
     def stream(self):
         self.streaming = True
         self.finished = False
-        while not self.finished:
-            if self.streaming:
+        while not self.finished:  # main loop for thread, it will only exit when camera no longer needed
+            if self.streaming:  # as long as camera is stream mode new frame will be taken
                 ret, frame = self.camera.read()
                 if ret:
                     image = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_BGR888)

@@ -2,7 +2,7 @@
 import sys
 import os
 
-from PySide2.QtGui import QGuiApplication
+from PySide2.QtGui import QGuiApplication, QIcon
 from PySide2.QtQml import QQmlApplicationEngine
 
 import Camera
@@ -10,6 +10,7 @@ import Presenter
 
 if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
+    app.setWindowIcon(QIcon("Assets/tdu_logo.png"))
     engine = QQmlApplicationEngine()
 
     presenter = Presenter.Presenter()

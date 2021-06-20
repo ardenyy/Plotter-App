@@ -13,6 +13,7 @@ Item {
     property string buttonProcessText: qsTr("Process the Photo")
     property string buttonPlotText: qsTr("Start Plotting the Image")
 
+    // all connections coming from presenter
     Connections{
         target: presenter
         function onNewFrame() {
@@ -23,16 +24,17 @@ Item {
             isCameraOpen = true
             isSelectingPort = false
             isPlotting = false
+            portModel.clear()
             console.log("Started Streaming")
         }
-        function onFinishedStreaming() {
+        function onFinishedStreaming() { // camera is still on just dont provide new images
             isStreaming = false
             isCameraOpen = true
             isSelectingPort = false
             isPlotting = false
             console.log("Finished Streaming")
         }
-        function onCameraClosed() {
+        function onCameraClosed() { // camera and its thread destroyed
             isStreaming = false
             isCameraOpen = false
             isSelectingPort = true
@@ -57,7 +59,6 @@ Item {
             if(progress === 100) delay(2000, circularProgress.text = "DONE!")
         }
         function onSerialPorts(ports) {
-            portModel.clear()
             portModel.append({text: ports})
             comboBoxSerial.model = portModel
         }
@@ -86,6 +87,7 @@ Item {
         border.width: 5
         clip: true
 
+        // Background image for Application, taken from Turkish-German University
         Image {
             id: background
             source: "../tdu_background.png"
@@ -96,7 +98,7 @@ Item {
 
         Image {
             id: tdu_logo
-            source: "../tdu_logo.png"
+            source: "../tdu_logo.png" // Turkish-German University Logo
             antialiasing: true
             sourceSize.width: 100
             sourceSize.height: 100
@@ -111,7 +113,7 @@ Item {
 
         Image {
             id: tub_logo
-            source: "../tub_logo.png"
+            source: "../tub_logo.png" // Technical University Of Berlin Logo
             antialiasing: true
             sourceSize.width: 100
             sourceSize.height: 100
@@ -124,6 +126,7 @@ Item {
             z: 0
         }
 
+        // this is where image will be displayed
         Rectangle {
             id: imageRectangle
             width: 0.6*rectangle.width
@@ -159,6 +162,7 @@ Item {
             }
         }
 
+        // to show plotting process, calculated from total number of gcode line
         CircularProgress {
             id: circularProgress
             anchors.top: parent.top
@@ -247,6 +251,9 @@ Item {
                     opacity: 0.5
                     border.width: 3
                     border.color: "#000000"
+                }
+                onCurrentTextChanged: {
+                    currentText == "" ? buttonPlot.enabled = false: buttonPlot.enabled = true
                 }
             }
 
