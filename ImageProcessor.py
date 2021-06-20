@@ -117,9 +117,9 @@ class ImageProcessor():
             '''
 
             contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
-            image = cv2.bitwise_not(image)
         else:
             print("Couldn't find the paper!")
+        image = cv2.bitwise_not(image)
         return image, contours
 
     def biggestContour(self, contours):
