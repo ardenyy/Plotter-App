@@ -116,11 +116,11 @@ class ImageProcessor():
             image *= 255
             '''
 
-            cnt, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
+            contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
             image = cv2.bitwise_not(image)
         else:
             print("Couldn't find the paper!")
-        return image, cnt
+        return image, contours
 
     def biggestContour(self, contours):
         biggest = np.array([])
