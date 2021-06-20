@@ -110,10 +110,10 @@ class ImageProcessor():
 
             '''
             skeleton method
-            image2 = image2 >100
-            image2 = skeletonize(image2)
-            image2 = image2.astype(np.uint8)  #convert to an unsigned byte
-            image2 *= 255
+            image = image >100
+            image = skeletonize(image)
+            image = image.astype(np.uint8)  #convert to an unsigned byte
+            image *= 255
             '''
 
             cnt, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
