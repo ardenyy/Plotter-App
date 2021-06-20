@@ -18,24 +18,25 @@ class ImageProcessor():
     svg_path = path + "processed_image.svg"
     gcode_path = path + "processed_image.gcode"
 
-    FORMAT = QSize(840, 594)
+    FORMAT = QSize(280, 200)
 
     def process(self, qimage, format=FORMAT):
         ptr = qimage.bits()
         image = np.array(ptr).reshape(qimage.height(), qimage.width(), 3)
-        # image = cv2.resize(image, (format.width(), format.height()))
-        height, width = image.shape[:2]
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # image processing code
         image, contours = self.imageProcessing(image)
 
+        image = np.ones([image.shape[0], image.shape[1], 3], dtype=np.uint8) * 255
+        cv2.drawContours(image, contours, -1, (0, 0, 0), 3)
+
         # conversion for QML
-        qimage = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_Grayscale8)
+        qimage = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_BGR888)
         qimage = qimage.scaled(format, Qt.KeepAspectRatio, Qt.FastTransformation)
 
         # svg and gcode conversion thread
-        thread_svg = threading.Thread(target=self.contours_to_svg, args=(contours, width, height), daemon=True)
+        thread_svg = threading.Thread(target=self.contours_to_svg, args=(contours, format.width(), format.height()), daemon=True)
         thread_svg.start()
         return qimage
 
@@ -54,7 +55,7 @@ class ImageProcessor():
             f.write(svg)
         if not to_gcode:
             return
-        self.svg_to_gcode(svg, 0.5)
+        self.svg_to_gcode(svg, 0.1)
         return
 
     def svg_to_gcode(self, path=svg_path, tolerance=0.1, pathtosave=gcode_path):
@@ -63,6 +64,9 @@ class ImageProcessor():
         gcode_compiler = Compiler(interfaces.Gcode, movement_speed=50000, cutting_speed=40000, pass_depth=5)
         gcode_compiler.append_curves(curves)
         gcode_compiler.compile_to_file(pathtosave, passes=1)
+        with open(pathtosave, "ab") as f:
+            return_home = b"\nG21G90 G0Z5;\nG90 G0 X0 Y0;\nG90 G0 Z0;"
+            f.write(return_home)
 
     def openPreviewImage(self, width, height):
         renderer = QSvgRenderer(self.svg_path)
@@ -116,9 +120,11 @@ class ImageProcessor():
             image *= 255
             '''
 
+            image = cv2.resize(image, (self.FORMAT.width(), self.FORMAT.height()))
             contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
         else:
             print("Couldn't find the paper!")
+            image = cv2.resize(image, (self.FORMAT.width(), self.FORMAT.height()))
         image = cv2.bitwise_not(image)
         return image, contours
 

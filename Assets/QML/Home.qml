@@ -145,7 +145,7 @@ Item {
                 source: "image://camera_provider/frame"
                 anchors.margins: 10
                 sourceSize.width: parent.width
-                sourceSize.height: (1/1.414)*sourceSize.width // "A" paper ratio
+                sourceSize.height: parent.height // "A" paper ratio
                 cache: false
                 smooth: true
                 anchors.fill: parent
