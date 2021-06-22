@@ -2,13 +2,12 @@
 import cv2
 import numpy as np
 import threading
-from skimage.morphology import skeletonize
 
 from svg_to_gcode.svg_parser import parse_string
 from svg_to_gcode.compiler import Compiler, interfaces
 from svg_to_gcode import TOLERANCES
 
-from PySide2.QtCore import QSize, Qt
+from PySide2.QtCore import QSize
 from PySide2.QtGui import QImage, QPainter
 from PySide2.QtSvg import QSvgRenderer
 
@@ -23,17 +22,16 @@ class ImageProcessor():
     def process(self, qimage, format=FORMAT):
         ptr = qimage.bits()
         image = np.array(ptr).reshape(qimage.height(), qimage.width(), 3)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # image processing code
-        image, contours = self.imageProcessing(image)
+        contours = self.imageProcessing(image)
 
-        image = np.ones([image.shape[0], image.shape[1], 3], dtype=np.uint8) * 255
+        image = np.ones((format.height(), format.width(), 3), dtype=np.uint8) * 255
         cv2.drawContours(image, contours, -1, (0, 0, 0), 3)
 
         # conversion for QML
-        qimage = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_BGR888)
-        qimage = qimage.scaled(format, Qt.KeepAspectRatio, Qt.FastTransformation)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        qimage = QImage(image.data, format.width(), format.height(), QImage.Format_Grayscale8)
 
         # svg and gcode conversion thread
         thread_svg = threading.Thread(target=self.contours_to_svg, args=(contours, format.width(), format.height()), daemon=True)
@@ -80,6 +78,7 @@ class ImageProcessor():
         cv2.imshow("Preview", image)
 
     def imageProcessing(self, img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         image = img.copy()
         height, width = image.shape[:2]
         threshold = [100, 200]
@@ -89,7 +88,7 @@ class ImageProcessor():
         image = cv2.dilate(image, kernel, iterations=2)  # APPLY DILATION
         image = cv2.erode(image, kernel, iterations=1)  # APPLY EROSION
 
-        contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
+        contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
         biggest, maxArea = self.biggestContour(contours)
         if biggest.size != 0:
             biggest = self.reorder(biggest)
@@ -101,39 +100,30 @@ class ImageProcessor():
             # REMOVE 25 PIXELS FORM EACH SIDE
             image = image[25:image.shape[0] - 25, 25:image.shape[1] - 25]
             image = cv2.resize(image, (width, height))
-
-            # APPLY ADAPTIVE THRESHOLD
-            image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,7, 2)
-            image = cv2.bitwise_not(image)
-            image = cv2.medianBlur(image, 5)
-            image = cv2.Canny(image, 80, 150)
-            kernel = np.ones((3, 3))
-
-            image = cv2.dilate(image, kernel, iterations=5)  # APPLY DILATION
-            image = cv2.erode(image, kernel, iterations=3)  # APPLY EROSION
-
-            '''
-            skeleton method
-            image = image >100
-            image = skeletonize(image)
-            image = image.astype(np.uint8)  #convert to an unsigned byte
-            image *= 255
-            '''
-
-            image = cv2.resize(image, (self.FORMAT.width(), self.FORMAT.height()))
-            contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
         else:
             print("Couldn't find the paper!")
-            image = cv2.resize(image, (self.FORMAT.width(), self.FORMAT.height()))
+            image = img.copy()
+
+        # APPLY ADAPTIVE THRESHOLD
+        image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 7, 2)
         image = cv2.bitwise_not(image)
-        return image, contours
+        image = cv2.medianBlur(image, 5)
+        image = cv2.Canny(image, 120, 200)
+        kernel = np.ones((3, 3))
+
+        image = cv2.dilate(image, kernel, iterations=5)  # APPLY DILATION
+        image = cv2.erode(image, kernel, iterations=3)  # APPLY EROSION
+
+        image = cv2.resize(image, (self.FORMAT.width(), self.FORMAT.height()))
+        contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # FIND ALL CONTOURS
+        return contours
 
     def biggestContour(self, contours):
         biggest = np.array([])
         max_area = 0
         for i in contours:
             area = cv2.contourArea(i)
-            if area > 5000: #5000
+            if area > 5000:
                 peri = cv2.arcLength(i, True)
                 approx = cv2.approxPolyDP(i, 0.02 * peri, True)
                 if area > max_area and len(approx) == 4:

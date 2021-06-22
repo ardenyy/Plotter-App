@@ -7,9 +7,7 @@ from PySide2.QtGui import QImage
 
 # Cached Image, prevents ui to ask to many requests from camera
 # also work as placeholder while app starts
-global_image = QImage(0, 0, QImage.Format_BGR888)
-# as opencv provides image in BGR format and Qt also support this format,
-# throughout the application BGR forma will be used rather than classic RGB
+global_image = QImage("Assets/no_camera.png")
 
 
 class Camera(QObject):
