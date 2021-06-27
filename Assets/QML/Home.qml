@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
+import QtQml 2.15
 
 Item {
     property bool isStreaming: true
@@ -56,7 +57,7 @@ Item {
         function onProgressUpdate(progress) {
             circularProgress.currentValue = progress
             circularProgress.text = progress.toFixed(2) + "%"
-            if(progress === 100) delay(2000, circularProgress.text = "DONE!")
+            if(progress === 100) delay(1000, circularProgress.text = "DONE!")
         }
         function onSerialPorts(ports) {
             portModel.append({text: ports})
@@ -69,10 +70,13 @@ Item {
     }
 
     function delay(delayTime, cb) {
-        timer.interval = delayTime;
-        timer.repeat = false;
-        timer.triggered.connect(cb);
-        timer.start();
+        timer.interval = delayTime
+        timer.repeat = false
+        timer.triggered.connect(cb)
+        timer.start()
+    }
+    Timer {
+        id: timer
     }
 
     ListModel {
@@ -129,8 +133,8 @@ Item {
         // this is where image will be displayed
         Rectangle {
             id: imageRectangle
-            width: 0.6*rectangle.width
-            height: (1/1.414)*width // "A" paper ratio
+            width: Math.round(0.6*rectangle.width)
+            height: Math.round((1/1.414)*width) // "A" paper ratio
             visible: !isPlotting
             anchors.top: parent.top
             anchors.topMargin: 50
@@ -186,7 +190,7 @@ Item {
             height: children.height
             z: 1
 
-            RoundButton {
+            CustomButton {
                 id: buttonCamera
                 visible: isStreaming
                 height: 55
@@ -194,35 +198,19 @@ Item {
                 padding: 15
                 text: buttonCameraText
                 onClicked: presenter.stopCamera()
-                background: Rectangle {
-                    color: "#53565A"
-                    radius: parent.padding
-                    opacity: 0.5
-                    border.width: 3
-                    border.color: "#000000"
-                }
             }
 
-            RoundButton {
+            CustomButton {
                 id: buttonRetake
                 visible: !isStreaming
                 height: 55
                 width: implicitWidth + rectangle.width/10
                 padding: 15
                 text: buttonRetakeText
-                onClicked: {
-                    presenter.startCamera()
-                }
-                background: Rectangle {
-                    color: "#53565A"
-                    radius: parent.padding
-                    opacity: 0.5
-                    border.width: 3
-                    border.color: "#000000"
-                }
+                onClicked: presenter.startCamera()
             }
 
-            RoundButton {
+            CustomButton {
                 id: buttonProcess
                 visible: !isStreaming && isCameraOpen
                 height: 55
@@ -230,51 +218,34 @@ Item {
                 padding: 15
                 text: buttonProcessText
                 onClicked: presenter.processImage()
-                background: Rectangle {
-                    color: "#53565A"
-                    radius: parent.padding
-                    opacity: 0.5
-                    border.width: 3
-                    border.color: "#000000"
-                }
             }
 
-            ComboBox {
+            CustomComboBox {
                 id:comboBoxSerial
                 visible: isSelectingPort
                 height: 55
                 width: implicitWidth + rectangle.width/10
                 padding: 15
-                background: Rectangle {
-                    color: "#53565A"
-                    radius: parent.padding
-                    opacity: 0.5
-                    border.width: 3
-                    border.color: "#000000"
-                }
                 onCurrentTextChanged: {
                     currentText == "" ? buttonPlot.enabled = false: buttonPlot.enabled = true
                 }
             }
 
-            RoundButton {
+            CustomButton {
                 id: buttonPlot
                 visible: isSelectingPort
                 height: 55
                 width: implicitWidth + rectangle.width/10
                 padding: 15
                 text: buttonPlotText
-                onClicked: {
-                    presenter.startPlotting(comboBoxSerial.currentText)
-                }
-                background: Rectangle {
-                    color: "#53565A"
-                    radius: parent.padding
-                    opacity: 0.5
-                    border.width: 3
-                    border.color: "#000000"
-                }
+                onClicked: presenter.startPlotting(comboBoxSerial.currentText)
             }
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

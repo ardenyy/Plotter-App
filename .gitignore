@@ -71,7 +71,7 @@ Thumbs.db
 *.dll
 *.exe
 
-.Assets/Created/*
+Assets/Created/
 *.qtds
 *.pyproject
 .__pycache__/*

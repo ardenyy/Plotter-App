@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQml 2.15
 
 // taken from here:
 // https://stackoverflow.com/questions/22873550/how-to-create-a-circular-progress-bar-in-pure-qmljs

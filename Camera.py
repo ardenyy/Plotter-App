@@ -48,7 +48,7 @@ class Camera(QObject):
 
     def changeGlobalImage(self, image):
         global global_image
-        global_image = image
+        global_image = image.copy()
         self.newImage.emit()
 
 
@@ -58,8 +58,9 @@ class CameraImageProvider(QQuickImageProvider):
 
     def requestImage(self, id, size, requestedSize):
         global global_image
+        image = global_image.copy()
         if not requestedSize.width() > 0 and not requestedSize.height() > 0:
             requestedSize.setWidth(global_image.width())
             requestedSize.setHeight(global_image.height())
-        image = global_image.scaled(requestedSize, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        image = image.scaled(requestedSize, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         return image

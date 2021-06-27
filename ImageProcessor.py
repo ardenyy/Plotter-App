@@ -29,14 +29,10 @@ class ImageProcessor():
         image = np.ones((format.height(), format.width(), 3), dtype=np.uint8) * 255
         cv2.drawContours(image, contours, -1, (0, 0, 0), 3)
 
-        # conversion for QML
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        qimage = QImage(image.data, format.width(), format.height(), QImage.Format_Grayscale8)
-
         # svg and gcode conversion thread
         thread_svg = threading.Thread(target=self.contours_to_svg, args=(contours, format.width(), format.height()), daemon=True)
         thread_svg.start()
-        return qimage
+        return image
 
     def contours_to_svg(self, contours, width, height, to_gcode=True):
         svg = '<svg width="' + str(width) + '" height="' + str(height) + '" xmlns="http://www.w3.org/2000/svg">'

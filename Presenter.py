@@ -2,6 +2,7 @@
 import threading
 
 from PySide2.QtCore import Slot, Signal, QObject, QThread
+from PySide2.QtGui import QImage
 
 import Camera
 import ImageProcessor
@@ -64,8 +65,9 @@ class Presenter(QObject):
 
     @Slot()
     def processImage(self):
-        processed_image = self.processor.process(Camera.global_image)
-        self.camera.changeGlobalImage(processed_image)
+        image = self.processor.process(Camera.global_image)
+        image = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_BGR888)
+        self.camera.changeGlobalImage(image)
         self.getSerialPorts()
         self.stopCamera()
 
