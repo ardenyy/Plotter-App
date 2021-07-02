@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+import os
+import sys
 import time
 from serial import Serial
 from serial.tools import list_ports
@@ -11,7 +13,7 @@ class SerialCommunicator(QObject):
     plottingStarted = Signal()
     plottingStopped = Signal()
     connectionTimeout = Signal(str)
-    path = 'Assets/Created/processed_image.gcode'
+    path = os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), 'Assets/processed_image.gcode')
     timeout = 180 #timeout value for gcode sending.
     #if too long can wait unnecessarily for  worng port
     #if too short can cause error while waiting for commands to execute

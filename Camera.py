@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+import os
+import sys
 import cv2
 
 from PySide2.QtCore import Slot, Signal, QObject, Qt
@@ -7,8 +9,7 @@ from PySide2.QtGui import QImage
 
 # Cached Image, prevents ui to ask to many requests from camera
 # also work as placeholder while app starts
-global_image = QImage("Assets/no_camera.png")
-
+global_image = QImage(os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), "Assets/no_camera.png"))
 
 class Camera(QObject):
     finishedStreaming = Signal()

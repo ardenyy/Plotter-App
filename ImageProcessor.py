@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+import os
+import sys
 import cv2
 import numpy as np
 import threading
@@ -13,7 +15,7 @@ from PySide2.QtSvg import QSvgRenderer
 
 
 class ImageProcessor():
-    path = "Assets/Created/"
+    path = os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), "Assets/")
     svg_path = path + "processed_image.svg"
     gcode_path = path + "processed_image.gcode"
 
@@ -52,9 +54,9 @@ class ImageProcessor():
         self.svg_to_gcode(svg, 0.1)
         return
 
-    def svg_to_gcode(self, path=svg_path, tolerance=0.1, pathtosave=gcode_path):
+    def svg_to_gcode(self, svg, tolerance=0.1, pathtosave=gcode_path):
         TOLERANCES['approximation'] = tolerance
-        curves = parse_string(path)
+        curves = parse_string(svg)
         gcode_compiler = Compiler(interfaces.Gcode, movement_speed=50000, cutting_speed=40000, pass_depth=5)
         gcode_compiler.append_curves(curves)
         gcode_compiler.compile_to_file(pathtosave, passes=1)

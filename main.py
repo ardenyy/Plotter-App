@@ -8,9 +8,14 @@ from PySide2.QtQml import QQmlApplicationEngine
 import Camera
 import Presenter
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
 if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
-    app.setWindowIcon(QIcon("Assets/tdu_logo.png"))
+    app.setWindowIcon(QIcon(resource_path("Assets/tdu_logo.png")))
     engine = QQmlApplicationEngine()
 
     presenter = Presenter.Presenter()
@@ -19,7 +24,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("presenter", presenter)
     engine.addImageProvider("camera_provider", camProvider)
 
-    engine.load(os.path.join(os.path.dirname(__file__), "Assets/QML/Main.qml"))
+    engine.load(resource_path("Assets/QML/Main.qml"))
 
     if not engine.rootObjects():
         sys.exit(-1)
